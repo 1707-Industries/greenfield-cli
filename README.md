@@ -49,7 +49,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/hello.js](https://github.com/Johnathan/base-cli/blob/v0.0.0/src/commands/hello.js)_
+_See code: [src/commands/setup.js](https://github.com/Johnathan/base-cli/blob/v0.0.0/src/commands/hello.js)_
 
 ## `base-cli help [COMMAND]`
 
