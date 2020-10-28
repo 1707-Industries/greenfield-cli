@@ -13,6 +13,8 @@
     "@oclif/plugin-help": "^3",
     "cli-ux": "^5.5.0",
     "extract-zip": "^2.0.1",
+    "glob": "^7.1.6",
+    "replace-in-file": "^6.1.0",
     "request": "^2.88.2",
     "unzipper": "^0.10.11"
   },
