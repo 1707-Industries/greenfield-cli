@@ -6,7 +6,6 @@ const path = require('path')
 const request = require('request')
 const extract = require('extract-zip')
 const replace = require('replace-in-file')
-const glob = require('glob')
 
 class CreateCommand extends Command {
   static args = [
@@ -42,7 +41,7 @@ class CreateCommand extends Command {
     // Download and unzip projects
     for (const key of Object.keys(this.projectTemplates)) {
       const destination = path.join(projectDirectory, `${key}.zip`)
-      const download = await this.download(this.projectTemplates[key], destination)
+      await this.download(this.projectTemplates[key], destination)
 
       let newDir = null
 
@@ -59,7 +58,7 @@ class CreateCommand extends Command {
       fs.rmSync(destination)
     }
 
-    cli.ux.info('Now les get you setup locally')
+    cli.ux.info('Now lets get you setup locally')
 
     const replacements = {
       machineName,
@@ -76,6 +75,33 @@ class CreateCommand extends Command {
   }
 
   async doReplacements(path, replacements) {
+    console.log({
+      path,
+      replacements,
+    });
+
+    const keys = Object.keys(replacements);
+
+    for(let index in keys) {
+      let key = keys[index];
+      const value = replacements[key];
+
+      key = `\\{\\[${key}\\]\\}`;
+
+      const regex = new RegExp(key, 'g');
+
+      console.log({
+        key,
+        value,
+        regex,
+      });
+
+      replace.sync({
+        files: `${path}/**/*`,
+        from: regex,
+        to: value,
+      });
+    }
   }
 
   async getFiles(path) {
@@ -100,9 +126,16 @@ class CreateCommand extends Command {
   }
 
   download(url, filename) {
+    const options = {
+      url,
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    };
+
     return new Promise(resolve => {
       request.head(url, () => {
-        request(url).pipe(fs.createWriteStream(filename)).on('close', () => {
+        request(options).pipe(fs.createWriteStream(filename)).on('close', () => {
           resolve(filename)
         })
       })
