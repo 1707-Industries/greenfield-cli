@@ -13,40 +13,77 @@ class CreateCommand extends Command {
   ]
 
   projectTemplates = {
-    // api: 'https://github.com/Johnathan/API-Base/archive/master.zip',
+    api: 'https://github.com/Johnathan/API-Base/archive/master.zip',
     frontend: 'https://github.com/Johnathan/Frontend-Base/archive/master.zip',
-  }
+  };
 
   introMessages = [
     '🙃 Nice. Another side project to work on for an hour or two and leave to rot',
     'Great. Lets get started 👍🏻',
-  ]
+    'Well this is exciting 🥳',
+    'Reckon this will be "the one"? 🤔'
+  ];
+
+  name = null;
+  machineName = null;
+  projectDirectory = null;
 
   async run() {
     const {flags} = this.parse(CreateCommand)
     const {args} = this.parse(CreateCommand)
-    cli.ux.info(this.introMessages[Math.floor(Math.random() * this.introMessages.length)])
 
-    const name = await cli.ux.prompt('Project Name', {
+    cli.ux.info(this.introMessages[Math.floor(Math.random() * this.introMessages.length)]);
+    this.name = await cli.ux.prompt('Project Name', {
       default: args.name,
-    })
+    });
 
-    const machineName = await cli.ux.prompt('Machine Name (nothing weird)', {
-      default: this.slugify(name),
-    })
+    this.machineName = await cli.ux.prompt('Machine Name (nothing weird)', {
+      default: this.slugify(this.name),
+    });
 
-    const projectDirectory = path.join(process.cwd(), machineName)
-    fs.mkdirSync(projectDirectory)
+    this.projectDirectory = path.join(process.cwd(), this.machineName);
 
-    // Download and unzip projects
+    // Create the project directory
+    fs.mkdirSync(this.projectDirectory);
+
+    cli.ux.info('Two secs, just downloading the template projects');
+    await this.downloadAndExtractTemplates(this.projectDirectory);
+
+    await this.createDotEnvFiles();
+
+    cli.ux.info('Cool. Now lets get you setup');
+    await this.performTextReplacements();
+  }
+
+  async performTextReplacements() {
+    const replacements = {
+      machineName: this.machineName,
+      name: this.name,
+      apiUrl: await cli.ux.prompt('API URL', {default: `api.${this.machineName}.test`}),
+      backofficeUrl: await cli.ux.prompt('Backoffice URL', {default: `backoffice.${this.machineName}.test`}),
+      frontendUrl: await cli.ux.prompt('Frontend URL', {default: `${this.machineName}.test`}),
+      frontendPort: await cli.ux.prompt('Frontend Port', {default: 3000}),
+    }
+
+    for (let projectTemplatesKey in this.projectTemplates) {
+      const replacementPath = [
+        `${path.join(this.projectDirectory, projectTemplatesKey)}/**/*`,
+        `${path.join(this.projectDirectory, projectTemplatesKey)}/.env`
+      ];
+
+      this.replaceInPath(replacementPath, replacements)
+    }
+  }
+
+  async downloadAndExtractTemplates() {
     for (const key of Object.keys(this.projectTemplates)) {
-      const destination = path.join(projectDirectory, `${key}.zip`)
+      const destination = path.join(this.projectDirectory, `${key}.zip`)
       await this.download(this.projectTemplates[key], destination)
 
       let newDir = null
 
-      await extract(path.join(projectDirectory, `${key}.zip`), {
-        dir: path.join(projectDirectory),
+      await extract(path.join(this.projectDirectory, `${key}.zip`), {
+        dir: path.join(this.projectDirectory),
         onEntry: (entry) => {
           if (!newDir) {
             newDir = entry.fileName
@@ -54,75 +91,29 @@ class CreateCommand extends Command {
         },
       })
 
-      fs.renameSync(path.join(projectDirectory, newDir), path.join(projectDirectory, key))
+      fs.renameSync(path.join(this.projectDirectory, newDir), path.join(this.projectDirectory, key))
       fs.rmSync(destination)
-    }
-
-    cli.ux.info('Now lets get you setup locally')
-
-    const replacements = {
-      machineName,
-      name,
-      apiUrl: await cli.ux.prompt('API URL', {default: `api.${machineName}.test`}),
-      backofficeUrl: await cli.ux.prompt('Backoffice URL', {default: `backoffice.${machineName}.test`}),
-      frontendUrl: await cli.ux.prompt('Frontend URL', {default: `${machineName}.test`}),
-      frontendPort: await cli.ux.prompt('Frontend Port', {default: 3000}),
-    }
-
-    for (let projectTemplatesKey in this.projectTemplates) {
-      this.doReplacements(path.join(projectDirectory, projectTemplatesKey), replacements)
     }
   }
 
-  async doReplacements(path, replacements) {
-    console.log({
-      path,
-      replacements,
-    });
-
+  replaceInPath(replacementPath, replacements) {
     const keys = Object.keys(replacements);
 
     for(let index in keys) {
       let key = keys[index];
       const value = replacements[key];
 
+      // ew.
       key = `\\{\\[${key}\\]\\}`;
 
       const regex = new RegExp(key, 'g');
 
-      console.log({
-        key,
-        value,
-        regex,
-      });
-
       replace.sync({
-        files: `${path}/**/*`,
+        files: replacementPath,
         from: regex,
         to: value,
       });
     }
-  }
-
-  async getFiles(path) {
-    const entries = await fs.readdirSync(path, {withFileTypes: true})
-
-    // Get files within the current directory and add a path key to the file objects
-    const files = entries
-      .filter(file => !file.isDirectory())
-      .map(file => ({...file, path: path + file.name}))
-
-    // Get folders within the current directory
-    const folders = entries.filter(folder => folder.isDirectory())
-
-    for (const folder of folders)
-      /*
-        Add the found files within the subdirectory to the files array by calling the
-        current function itself
-      */
-      files.push(...await this.getFiles(`${path}${folder.name}/`))
-
-    return files
   }
 
   download(url, filename) {
@@ -158,6 +149,13 @@ class CreateCommand extends Command {
       .replace(/-+/g, '-') // collapse dashes
 
     return str
+  }
+
+  async createDotEnvFiles() {
+    for (const key of Object.keys(this.projectTemplates)) {
+      const location = path.join(this.projectDirectory, key);
+      fs.copyFileSync(path.join(location, '.env.example'), path.join(location, '.env'))
+    }
   }
 }
 
