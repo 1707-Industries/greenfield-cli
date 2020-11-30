@@ -16,7 +16,9 @@
     "glob": "^7.1.6",
     "replace-in-file": "^6.1.0",
     "request": "^2.88.2",
-    "unzipper": "^0.10.11"
+    "simple-ssh": "^1.0.0",
+    "unzipper": "^0.10.11",
+    "yaml": "^1.10.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
