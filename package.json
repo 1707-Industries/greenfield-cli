@@ -19,7 +19,7 @@
     "chai": "^4",
     "eslint": "^5.13",
     "eslint-config-oclif": "^3.1",
-    "globby": "^10",
+    "globby": "^11",
     "mocha": "^5",
     "nyc": "^15"
   },
