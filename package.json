@@ -11,7 +11,13 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
-    "cli-ux": "^5.5.1"
+    "await-exec": "^0.1.2",
+    "cli-ux": "^5.5.1",
+    "extract-zip": "^2.0.1",
+    "replace-in-file": "^6.1.0",
+    "request": "^2.88.2",
+    "unzipper": "^0.10.11",
+    "yaml": "^1.10.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
