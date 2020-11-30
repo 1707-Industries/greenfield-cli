@@ -8,7 +8,6 @@ const extract = require('extract-zip')
 const replace = require('replace-in-file')
 const {exec} = require('child_process')
 const yaml = require('yaml')
-const ssh = require('simple-ssh')
 
 class CreateCommand extends Command {
   static args = [

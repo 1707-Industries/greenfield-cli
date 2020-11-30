@@ -11,12 +11,10 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
-    "cli-ux": "^5.5.0",
+    "cli-ux": "^5.5.1",
     "extract-zip": "^2.0.1",
-    "glob": "^7.1.6",
     "replace-in-file": "^6.1.0",
     "request": "^2.88.2",
-    "simple-ssh": "^1.0.0",
     "unzipper": "^0.10.11",
     "yaml": "^1.10.0"
   },
@@ -24,11 +22,11 @@
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
     "chai": "^4",
-    "eslint": "^5.13",
+    "eslint": "^7.14",
     "eslint-config-oclif": "^3.1",
-    "globby": "^10",
+    "globby": "^11",
     "mocha": "^5",
-    "nyc": "^14"
+    "nyc": "^15"
   },
   "engines": {
     "node": ">=8.0.0"
