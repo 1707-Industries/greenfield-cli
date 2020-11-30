@@ -6,7 +6,7 @@ const path = require('path')
 const request = require('request')
 const extract = require('extract-zip')
 const replace = require('replace-in-file')
-const {exec} = require('child_process')
+const exec = require('await-exec')
 const yaml = require('yaml')
 
 class CreateCommand extends Command {
@@ -15,7 +15,7 @@ class CreateCommand extends Command {
   ]
 
   projectTemplates = {
-    api: 'https://github.com/Johnathan/API-Base/archive/main.zip',
+    backend: 'https://github.com/Johnathan/API-Base/archive/main.zip',
     frontend: 'https://github.com/Johnathan/Frontend-Base/archive/main.zip',
   }
 
@@ -29,6 +29,7 @@ class CreateCommand extends Command {
   name = null
   machineName = null
   projectDirectory = null
+  databaseName = null
   apiUrl = null
   backofficeUrl = null
   frontendUrl = null
@@ -47,6 +48,7 @@ class CreateCommand extends Command {
       default: this.slugify(this.name),
     })
 
+    this.databaseName = await cli.ux.prompt('Database Name', {default: this.machineName.replace(/-/g, '_')})
     this.apiUrl = await cli.ux.prompt('API URL', {default: `api.${this.machineName}.test`})
     this.backofficeUrl = await cli.ux.prompt('Backoffice URL', {default: `backoffice.${this.machineName}.test`})
     this.frontendUrl = await cli.ux.prompt('Frontend URL', {default: `${this.machineName}.test`})
@@ -62,8 +64,17 @@ class CreateCommand extends Command {
 
     await this.createDotEnvFiles()
 
+    const replacements = {
+      machineName: this.machineName,
+      name: this.name,
+      apiUrl: this.apiUrl,
+      backofficeUrl: this.backofficeUrl,
+      frontendUrl: this.frontendUrl,
+      frontendPort: this.frontendPort,
+      databaseName: this.databaseName,
+    }
     cli.ux.info('Cool. Now lets get you setup')
-    await this.performTextReplacements()
+    await this.performTextReplacements(replacements)
 
     await this.addToHosts()
 
@@ -73,19 +84,22 @@ class CreateCommand extends Command {
     await this.addProjectToHomestead()
 
     await this.installBackendDependencies()
+
+    // Set App Key
+    await this.setAppKey()
+
+    // Run Migrations
+    await this.runMigrations()
+
+    // Install Passport
+    const passportCredentials = await this.installLaravelPassport()
+
+    await this.addAPIKeyToFrontend(passportCredentials)
+
+    await this.createAdminUser();
   }
 
-  async performTextReplacements() {
-
-    const replacements = {
-      machineName: this.machineName,
-      name: this.name,
-      apiUrl: this.apiUrl,
-      backofficeUrl: this.backofficeUrl,
-      frontendUrl: this.frontendUrl,
-      frontendPort: this.frontendPort,
-    }
-
+  async performTextReplacements(replacements) {
     for (let projectTemplatesKey in this.projectTemplates) {
       const replacementPath = [
         `${path.join(this.projectDirectory, projectTemplatesKey)}/**/*`,
@@ -199,7 +213,7 @@ class CreateCommand extends Command {
 
   async installFrontendDependencies() {
     cli.ux.info('Installing frontend dependencies 🖍')
-    exec(`cd ${path.join(this.projectDirectory, 'frontend')} && yarn`, (error, stdout, stderr) => {
+    await exec(`cd ${path.join(this.projectDirectory, 'frontend')} && yarn`, (error, stdout, stderr) => {
     })
   }
 
@@ -228,26 +242,17 @@ class CreateCommand extends Command {
     })
 
     // Add database
-    parsedYaml.databases.push(this.machineName)
+    parsedYaml.databases.push(this.databaseName)
 
     // Add test database
-    parsedYaml.databases.push(`${this.machineName}_test`)
+    parsedYaml.databases.push(`${this.databaseName}_testing`)
 
-    // fs.writeFileSync(homesteadYamlPath, yaml.stringify(parsedYaml));
+    fs.writeFileSync(homesteadYamlPath, yaml.stringify(parsedYaml))
 
     // Reload vagrant
-    exec(`cd ${await config.get('homesteadDirectory')} && vagrant up && vagrant reload --provision`)
-  }
-
-  async buildHomesteadCommand(command) {
-    const homesteadDirectory = await config.get('homesteadDirectory')
-    return `cd ${homesteadDirectory} && vagrant ssh -c "cd /home/vagrant/code/${this.machineName}/backend && ${command}"`
-  }
-
-  async installBackendDependencies() {
-    const command = await this.buildHomesteadCommand('php -d memory_limit=-1 $(which composer) install')
-    console.log(command)
-    exec(command, (error, stdout, stderr) => {
+    cli.ux.info('Provisioning your Vagrant box - twss')
+    await exec(`cd ${await config.get('homesteadDirectory')} && vagrant up && vagrant reload --provision`, (error, stdout, stderr) => {
+      console.log('????')
       if (error) {
         console.log(`error: ${error.message}`)
         return
@@ -258,6 +263,74 @@ class CreateCommand extends Command {
       }
       console.log(`stdout: ${stdout}`)
     })
+  }
+
+  async buildHomesteadCommand(command) {
+    const homesteadDirectory = await config.get('homesteadDirectory')
+    return `cd ${homesteadDirectory} && vagrant ssh -c "cd /home/vagrant/code/${this.machineName}/backend && ${command}"`
+  }
+
+  async executeCommand(command) {
+    return await exec(command)
+  }
+
+  async installBackendDependencies() {
+    const command = await this.buildHomesteadCommand('php -d memory_limit=-1 $(which composer) install')
+    await exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.log(`error: ${error.message}`)
+        return
+      }
+      if (stderr) {
+        console.log(`stderr: ${stderr}`)
+        return
+      }
+      console.log(`stdout: ${stdout}`)
+    })
+  }
+
+  async setAppKey() {
+    cli.ux.info('Setting Laravel Key')
+    const command = await this.buildHomesteadCommand('php artisan key:generate')
+    await this.executeCommand(command)
+  }
+
+  async runMigrations() {
+    cli.ux.info('Running Migrations')
+    const command = await this.buildHomesteadCommand('php artisan migrate')
+    await this.executeCommand(command)
+  }
+
+  async installLaravelPassport() {
+    cli.ux.info('Installing Laravel Passport');
+    const command = await this.buildHomesteadCommand('php artisan passport:install --force');
+    const execution = await this.executeCommand(command);
+    const credentials = execution.stdout.split('Password grant client created successfully.')[1].trim().split("\n");
+    console.log(credentials);
+    const clientId = credentials[0].replace('Client ID: ', '');
+    const clientSecret = credentials[1].replace('Client secret: ', '');
+    return {
+      clientId,
+      clientSecret
+    };
+  }
+
+  async addAPIKeyToFrontend(passportCredentials) {
+    await this.performTextReplacements(passportCredentials);
+    console.log('api to the frontend thing')
+    console.log({
+      passportCredentials,
+    })
+  }
+
+  async createAdminUser() {
+    cli.ux.info('Lets set you up as an admin');
+    const command = await this
+      .buildHomesteadCommand(`php artisan create-user --firstname=${await cli.ux.prompt('First Name')} --surname=${await cli.ux.prompt('Surname')} --email=${await cli.ux.prompt('Email Address')} --password=${await cli.ux.prompt('Password', {
+        type: 'hide',
+      })} --admin`);
+
+    await this.executeCommand(command);
   }
 }
 
