@@ -64,6 +64,8 @@ class CreateCommand extends Command {
 
     await this.createDotEnvFiles()
 
+    await this.createPackageJson()
+
     const replacements = {
       machineName: this.machineName,
       name: this.name,
@@ -96,7 +98,7 @@ class CreateCommand extends Command {
 
     await this.addAPIKeyToFrontend(passportCredentials)
 
-    await this.createAdminUser();
+    await this.createAdminUser()
   }
 
   async performTextReplacements(replacements) {
@@ -302,21 +304,21 @@ class CreateCommand extends Command {
   }
 
   async installLaravelPassport() {
-    cli.ux.info('Installing Laravel Passport');
-    const command = await this.buildHomesteadCommand('php artisan passport:install --force');
-    const execution = await this.executeCommand(command);
-    const credentials = execution.stdout.split('Password grant client created successfully.')[1].trim().split("\n");
-    console.log(credentials);
-    const clientId = credentials[0].replace('Client ID: ', '');
-    const clientSecret = credentials[1].replace('Client secret: ', '');
+    cli.ux.info('Installing Laravel Passport')
+    const command = await this.buildHomesteadCommand('php artisan passport:install --force')
+    const execution = await this.executeCommand(command)
+    const credentials = execution.stdout.split('Password grant client created successfully.')[1].trim().split('\n')
+    console.log(credentials)
+    const clientId = credentials[0].replace('Client ID: ', '')
+    const clientSecret = credentials[1].replace('Client secret: ', '')
     return {
       clientId,
-      clientSecret
-    };
+      clientSecret,
+    }
   }
 
   async addAPIKeyToFrontend(passportCredentials) {
-    await this.performTextReplacements(passportCredentials);
+    await this.performTextReplacements(passportCredentials)
     console.log('api to the frontend thing')
     console.log({
       passportCredentials,
@@ -324,13 +326,21 @@ class CreateCommand extends Command {
   }
 
   async createAdminUser() {
-    cli.ux.info('Lets set you up as an admin');
+    cli.ux.info('Lets set you up as an admin')
     const command = await this
       .buildHomesteadCommand(`php artisan create-user --firstname=${await cli.ux.prompt('First Name')} --surname=${await cli.ux.prompt('Surname')} --email=${await cli.ux.prompt('Email Address')} --password=${await cli.ux.prompt('Password', {
         type: 'hide',
-      })} --admin`);
+      })} --admin`)
 
-    await this.executeCommand(command);
+    await this.executeCommand(command)
+  }
+
+  async createPackageJson() {
+    const packageJson = path.join(this.projectDirectory, 'frontend', 'package.json')
+    const packageJsonExample = path.join(this.projectDirectory, 'frontend', 'package.json.example')
+
+    fs.rmSync(packageJson)
+    fs.renameSync(packageJsonExample, packageJson)
   }
 }
 
