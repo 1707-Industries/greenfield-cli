@@ -49,9 +49,9 @@ class CreateCommand extends Command {
     })
 
     this.databaseName = await cli.ux.prompt('Database Name', {default: this.machineName.replace(/-/g, '_')})
-    this.apiUrl = await cli.ux.prompt('API URL', {default: `api.${this.machineName}.test`})
-    this.backofficeUrl = await cli.ux.prompt('Backoffice URL', {default: `backoffice.${this.machineName}.test`})
-    this.frontendUrl = await cli.ux.prompt('Frontend URL', {default: `${this.machineName}.test`})
+    this.apiUrl = await cli.ux.prompt('API URL', {default: `http://api.${this.machineName}.test`})
+    this.backofficeUrl = await cli.ux.prompt('Backoffice URL', {default: `http://backoffice.${this.machineName}.test`})
+    this.frontendUrl = await cli.ux.prompt('Frontend URL', {default: `http://${this.machineName}.test`})
     this.frontendPort = await cli.ux.prompt('Frontend Port', {default: 3000})
 
     this.projectDirectory = path.join(process.cwd(), this.machineName)
