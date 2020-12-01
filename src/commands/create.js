@@ -207,10 +207,11 @@ class CreateCommand extends Command {
     }
 
     // don't know how to do this without doing EVERYTHING as sudo
-    cli.ux.info('Add the following lines to /etc/hosts')
+    cli.ux.info('===== Add the following lines to /etc/hosts =====')
     cli.ux.info(`${homesteadIp} ${this.apiUrl}`)
     cli.ux.info(`${homesteadIp} ${this.backofficeUrl}`)
     cli.ux.info(`127.0.0.1 ${this.frontendUrl}`)
+    cli.ux.info('=================================================')
   }
 
   async installFrontendDependencies() {
