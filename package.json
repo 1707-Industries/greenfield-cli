@@ -9,6 +9,7 @@
   "bugs": "https://github.com/1707-Industries/greenfield-cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
+    "@oclif/dev-cli": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "await-exec": "^0.1.2",
@@ -20,7 +21,6 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
     "chai": "^4",
     "eslint": "^7.14",
