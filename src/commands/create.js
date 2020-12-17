@@ -26,6 +26,7 @@ class CreateCommand extends Command {
     'Reckon this will be "the one"? 🤔',
   ]
 
+  authorName = null
   name = null
   machineName = null
   projectDirectory = null
@@ -40,6 +41,7 @@ class CreateCommand extends Command {
     const {args} = this.parse(CreateCommand)
 
     cli.ux.info(this.introMessages[Math.floor(Math.random() * this.introMessages.length)])
+    this.authorName = await cli.ux.prompt('Author Name');
     this.name = await cli.ux.prompt('Project Name', {
       default: args.name,
     })
@@ -67,6 +69,7 @@ class CreateCommand extends Command {
     await this.createPackageJson()
 
     const replacements = {
+      authorName: this.authorName,
       machineName: this.machineName,
       name: this.name,
       apiUrl: this.apiUrl,
