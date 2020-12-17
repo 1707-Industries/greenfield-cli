@@ -1,1 +1,2 @@
-CLI Tool for generating new applications based on   https://github.com/Johnathan/Frontend-Base and   https://github.com/Johnathan/API-Base
+CLI Tool for generating new applications based on
+https://github.com/1707-Industries/greenfield-frontend and https://github.com/1707-Industries/greenfield-backend

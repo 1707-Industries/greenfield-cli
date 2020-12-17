@@ -4,7 +4,7 @@ const fs = require('fs');
 
 class Config {
 
-  configFilePath = path.join(os.homedir(), '.base');
+  configFilePath = path.join(os.homedir(), '.greenfield');
 
   defaultConfig = {
 

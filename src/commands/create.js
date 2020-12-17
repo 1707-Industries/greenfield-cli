@@ -15,8 +15,8 @@ class CreateCommand extends Command {
   ]
 
   projectTemplates = {
-    backend: 'https://github.com/Johnathan/API-Base/archive/main.zip',
-    frontend: 'https://github.com/Johnathan/Frontend-Base/archive/main.zip',
+    backend: 'https://github.com/1707-Industries/greenfield-backend/archive/main.zip',
+    frontend: 'https://github.com/1707-Industries/greenfield-frontend/archive/main.zip',
   }
 
   introMessages = [

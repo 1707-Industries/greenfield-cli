@@ -1,12 +1,12 @@
 {
-  "name": "base-cli",
-  "description": "Base CLI for creating new web applications",
-  "version": "0.0.0",
-  "author": "Johnathan Barrett @Johnathan",
+  "name": "greenfield-cli",
+  "description": "1707 Industries Greenfield CLI for creating new web applications",
+  "version": "1.0.0",
+  "author": "Johnathan Barrett",
   "bin": {
-    "base-cli": "./bin/run"
+    "greenfield-cli": "./bin/run"
   },
-  "bugs": "https://github.com/Johnathan/base-cli/issues",
+  "bugs": "https://github.com/1707-Industries/greenfield-cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -38,7 +38,7 @@
     "/oclif.manifest.json",
     "/src"
   ],
-  "homepage": "https://github.com/Johnathan/base-cli",
+  "homepage": "https://github.com/1707-Industries/greenfield-cli",
   "keywords": [
     "oclif"
   ],
@@ -46,12 +46,12 @@
   "main": "src/index.js",
   "oclif": {
     "commands": "./src/commands",
-    "bin": "base-cli",
+    "bin": "greenfield-cli",
     "plugins": [
       "@oclif/plugin-help"
     ]
   },
-  "repository": "Johnathan/base-cli",
+  "repository": "1707-Industries/greenfield-cli",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint .",

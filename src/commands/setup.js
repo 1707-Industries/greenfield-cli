@@ -4,7 +4,7 @@ const config = new (require('../config'))()
 
 class SetupCommand extends Command {
   async run() {
-    cli.ux.info('Setting up base-cli')
+    cli.ux.info('Setting up greenfield-cli')
     const {flags} = this.parse(SetupCommand)
     const homesteadDirectory = await cli.ux.prompt('Where is your Laravel Homestead directory?', {
       required: false,
@@ -18,7 +18,7 @@ class SetupCommand extends Command {
     cli.ux.info('Setup complete')
     cli.ux.info(`
 Run the below to get started
-base-cli create PROJECTNAME
+greenfield-cli create PROJECTNAME
 `
     )
   }
@@ -30,6 +30,6 @@ base-cli create PROJECTNAME
   }
 }
 
-SetupCommand.description = 'Sets base-cli up. Should only be run once.'
+SetupCommand.description = 'Sets greenfield-cli up. Should only be run once.'
 
 module.exports = SetupCommand
