@@ -72,10 +72,10 @@ class CreateCommand extends Command {
       authorName: this.authorName,
       machineName: this.machineName,
       name: this.name,
-      apiUrl: this.apiUrl,
+      apiUrl: `http://${this.apiUrl}`,
       backofficeUrl: `http://${this.backofficeUrl}`,
       frontendUrl: `http://${this.frontendUrl}`,
-      frontendPort: `http://${this.frontendPort}`,
+      frontendPort: `${this.frontendPort}`,
       databaseName: `${this.databaseName}`,
     }
     cli.ux.info('Cool. Now lets get you setup')
