@@ -73,10 +73,10 @@ class CreateCommand extends Command {
       machineName: this.machineName,
       name: this.name,
       apiUrl: this.apiUrl,
-      backofficeUrl: this.backofficeUrl,
+      backofficeUrl: `http://${this.backofficeUrl}`,
       frontendUrl: `http://${this.frontendUrl}`,
       frontendPort: `http://${this.frontendPort}`,
-      databaseName: `http://${this.databaseName}`,
+      databaseName: `${this.databaseName}`,
     }
     cli.ux.info('Cool. Now lets get you setup')
     await this.performTextReplacements(replacements)
