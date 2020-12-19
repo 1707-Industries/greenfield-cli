@@ -1,14 +1,15 @@
-const {Command, flags} = require('@oclif/command')
+const {Command} = require('@oclif/command')
+const path = require('path')
 const cli = require('cli-ux')
 const config = new (require('../config'))()
+const homeDirectory = require('os').homedir()
 
 class SetupCommand extends Command {
   async run() {
     cli.ux.info('Setting up greenfield-cli')
-    const {flags} = this.parse(SetupCommand)
     const homesteadDirectory = await cli.ux.prompt('Where is your Laravel Homestead directory?', {
       required: false,
-      default: '~/Homestead',
+      default: path.join(homeDirectory, 'Homestead'),
     })
 
     this.createConfigFile({
@@ -19,7 +20,7 @@ class SetupCommand extends Command {
     cli.ux.info(`
 Run the below to get started
 greenfield-cli create PROJECTNAME
-`
+`,
     )
   }
 
