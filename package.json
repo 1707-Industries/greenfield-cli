@@ -1,7 +1,7 @@
 {
   "name": "greenfield-cli",
   "description": "1707 Industries Greenfield CLI for creating new web applications",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Johnathan Barrett",
   "bin": {
     "greenfield-cli": "bin/run"
